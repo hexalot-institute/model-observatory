@@ -1,0 +1,26 @@
+name: Contract checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Observatory (medium) contracts
+        run: python verify_observatory_contracts.py
+
+      - name: Run FORMA (strict) contracts
+        run: python verify_forma_contracts.py --strict
+
+      - name: Run unit tests
+        run: python -m unittest -v

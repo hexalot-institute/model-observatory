@@ -1,0 +1,31 @@
+[project]
+name = "model-observatory"
+version = "2.0.0"
+description = "Multi-provider model ecosystem observatory with behavioral drift detection, experiment invariants, and policy-driven routing"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Hexalot Institute of Cognitive Architecture"},
+]
+keywords = ["llm", "model-monitoring", "drift-detection", "ai-research", "experiment-integrity"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "requests>=2.28.0",
+]
+
+[project.optional-dependencies]
+dotenv = ["python-dotenv>=1.0.0"]
+
+[project.urls]
+Repository = "https://github.com/hexalot-institute/model-observatory"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"

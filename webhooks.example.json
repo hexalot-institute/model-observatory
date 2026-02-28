@@ -1,0 +1,20 @@
+{
+  "webhooks": [
+    {
+      "type": "discord",
+      "url": "https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN",
+      "min_severity": "WARN"
+    },
+    {
+      "type": "slack",
+      "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "min_severity": "CRITICAL"
+    },
+    {
+      "type": "generic",
+      "url": "http://localhost:8080/webhook/observatory",
+      "min_severity": "INFO"
+    }
+  ],
+  "cooldown_seconds": 300
+}
