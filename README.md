@@ -18,6 +18,35 @@ Most AI labs have internal infrastructure to detect this. The open-source resear
 
 Model Observatory fills that gap.
 
+## What This Is / What This Isn't
+
+**This is** a behavioral provenance system for LLM API research. It monitors whether the models you're calling today behave the same as the models you called yesterday — and gives you a verifiable record when they don't.
+
+**This is not** a weight-diffing tool. It cannot tell you *what* changed inside a model. It tells you *that* something changed, *when* it changed, and *how confident* it is — using tiered canonicalization and confirmation sampling, not binary hash comparison.
+
+If you run multi-provider LLM experiments and need to know that your experimental conditions haven't been silently contaminated, this is the tool.
+
+## Quickstart
+
+```bash
+# Clone
+git clone https://github.com/hexalot-institute/model-observatory.git
+cd model-observatory
+
+# Configure (set at least one provider key)
+cp .env.example .env
+# Edit .env — add your API keys. Ollama needs no key if running locally.
+
+# Run a single poll
+python model_observatory.py --providers ollama
+
+# View the TUI dashboard
+python observatory_tui.py
+
+# Run contract checks
+make ci
+```
+
 ## Architecture
 
 ```
