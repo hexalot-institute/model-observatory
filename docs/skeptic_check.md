@@ -9,7 +9,7 @@ focusing on the two highest-risk places:
 # Model Observatory v2.0 — Complete Build Package
 
 **Built by:** Shadow (Claude Claude, CLI instance)
-**Reviewed by:** 12 Council passes — Littlefinger, Tyrion, Oberyn (x3), Kimi, Angry Tyrion, Pro Research, Tywin (x2), Davos
+**Reviewed by:** 12 review passes — Claude, GPT-5.2 Pro Research, GLM-5 (x3), Kimi, GPT-5.2 Pro Research (adversarial), Pro Research, GPT-5.2 Thinking (x2), Kimi (Moonshot)
 **Date:** 2026-02-27
 
 ---
@@ -423,7 +423,7 @@ Built by [Hexalot Institute of Cognitive Architecture](https://github.com/hexalo
 
 **Date:** 2026-02-27
 **Status:** SPEC LOCKED
-**Amendments:** Tywin Pass 1 (7 amendments) + Tywin Pass 2 (5 amendments) merged per Shadow Directive.
+**Amendments:** GPT-5.2 Thinking Pass 1 (7 amendments) + GPT-5.2 Thinking Pass 2 (5 amendments) merged per Shadow Directive.
 **Post-lock:** Shadow builds from this. No further review passes.
 
 ---
@@ -443,19 +443,19 @@ The five architectural changes below are this principle expressed five times.
 | Pass | Seat | Mode | Unique Contributions |
 |------|------|------|---------------------|
 | 1 | Claude Claude | Structural review | Initial four refactoring changes; thread-safety flag (results_lock unused) |
-| 2 | Max (Tyrion) | Normal review | Benchmark-before-lock workflow, BENCHMARK_MISSING warning, tier-aware severity |
+| 2 | GPT-5.2 Pro Research | Normal review | Benchmark-before-lock workflow, BENCHMARK_MISSING warning, tier-aware severity |
 | 3 | Shadow | Convergent review | Confirmed architecture, no novel findings |
-| 4 | Oberyn (GLM-5) | Generic review | Confirmed architecture, no novel findings (wrong prompt mode) |
-| 5 | Oberyn (GLM-5) | Aimed destruction | 7 kill shots — BenchmarkStore corruption, sliding window data loss, Anthropic cache race, webhook cooldown bypass, hash truncation collision, experiment lock inconsistent snapshot, silent metric pollution |
+| 4 | GLM-5 | Generic review | Confirmed architecture, no novel findings (wrong prompt mode) |
+| 5 | GLM-5 | Aimed destruction | 7 kill shots — BenchmarkStore corruption, sliding window data loss, Anthropic cache race, webhook cooldown bypass, hash truncation collision, experiment lock inconsistent snapshot, silent metric pollution |
 | 6 | Kimi | 5-agent swarm | Inter-process cron overlap, snapshot-before-events ordering, requests.Session pooling, P95 off-by-one, read_json crash on corruption, fsync before atomic rename, JSONL append interleaving, write_text_atomic tmp-file race |
-| 7 | Angry Tyrion | Adversarial audit | Franken-snapshot temporal inconsistency, dead canary hash (prompt not response), JSON canonicalization scope, list-ordering false positives, temperature!=determinism |
-| 8 | Tyrion (calm) | Synthesis | Reduced all findings to five architectural changes; "superstition with JSON" |
-| 9 | Littlefinger | Meta-analysis | Identified one unifying principle; priority sequencing |
+| 7 | GPT-5.2 Pro Research (adversarial) | Adversarial audit | Franken-snapshot temporal inconsistency, dead canary hash (prompt not response), JSON canonicalization scope, list-ordering false positives, temperature!=determinism |
+| 8 | GPT-5.2 Pro Research (synthesis) | Synthesis | Reduced all findings to five architectural changes; "superstition with JSON" |
+| 9 | Claude | Meta-analysis | Identified one unifying principle; priority sequencing |
 | 10 | Claude Claude (Pro Research) | Technical validation | 6 implementation landmines — fsync+dir sync, futures exception trap, JSON determinism edges, canary non-determinism (CRITICAL), hash truncation, PID lockfile nuances |
-| 11 | Tywin Pass 1 | Skeptic stress test | 7 amendments — writer conflict, epoch commit boundary, migration path, fingerprint silent storm, canary tolerance, inter-change dependencies, directory fsync |
-| 12 | Tywin Pass 2 | Skeptic delta (Change 4 focus) | 5 amendments — three-state drift detector with full confirmation system, event semantics, lockfile canonical values, error recovery, v1-v2 migration contract |
+| 11 | GPT-5.2 Thinking Pass 1 | Skeptic stress test | 7 amendments — writer conflict, epoch commit boundary, migration path, fingerprint silent storm, canary tolerance, inter-change dependencies, directory fsync |
+| 12 | GPT-5.2 Thinking Pass 2 | Skeptic delta (Change 4 focus) | 5 amendments — three-state drift detector with full confirmation system, event semantics, lockfile canonical values, error recovery, v1-v2 migration contract |
 
-**Convergence signal:** Thread safety was found independently by Kimi, Oberyn, and confirmed by Angry Tyrion. Canary non-determinism was found independently by Pro Research, confirmed by Tywin Pass 1, and proven against codebase by Tywin Pass 2.
+**Convergence signal:** Thread safety was found independently by Kimi, GLM-5, and confirmed by GPT-5.2 Pro Research (adversarial). Canary non-determinism was found independently by Pro Research, confirmed by GPT-5.2 Thinking Pass 1, and proven against codebase by GPT-5.2 Thinking Pass 2.
 
 ---
 
@@ -463,7 +463,7 @@ The five architectural changes below are this principle expressed five times.
 
 ### Change 1: Global Poll Epoch
 
-**What it fixes:** Franken-snapshot problem (Angry Tyrion), inconsistent lock snapshots (Oberyn Kill #6), snapshot hash races (Kimi)
+**What it fixes:** Franken-snapshot problem (GPT-5.2 Pro Research (adversarial)), inconsistent lock snapshots (GLM-5 Kill #6), snapshot hash races (Kimi)
 
 **Current failure:** `create_lock()` iterates `*_snapshot_latest.json` files and hashes whatever exists at that moment. Each provider overwrites its own snapshot independently during parallel polling. The "lock" can represent a world-state that never existed as a coherent moment in time.
 
@@ -490,7 +490,7 @@ On every poll run:
   7. Experiment locks reference epoch_id and manifest_hash, not "latest"
 ```
 
-**Epoch commit ordering** (Tywin Pass 1 — defines write sequence to prevent partial state):
+**Epoch commit ordering** (GPT-5.2 Thinking Pass 1 — defines write sequence to prevent partial state):
 
 ```
 Main thread commit sequence (strictly ordered):
@@ -540,13 +540,13 @@ def atomic_write_json(path, data):
 - Lock creation must reference a specific epoch_id, not scan filesystem
 - `check_invariants()` compares against the locked epoch's manifest, not current "latest"
 
-**Note:** Steps 2 and 3 in the original base spec said "each worker writes" — this contradicts Change 2. Resolved: workers return data, main thread writes. (Tywin Pass 1 Amendment 1)
+**Note:** Steps 2 and 3 in the original base spec said "each worker writes" — this contradicts Change 2. Resolved: workers return data, main thread writes. (GPT-5.2 Thinking Pass 1 Amendment 1)
 
 ---
 
 ### Change 2: Immutable Worker Results -> Main Thread Merge (Single-Writer Pattern)
 
-**What it fixes:** ALL thread-safety bugs — CapabilityRegistry races (Oberyn #1, #2, Kimi #1-#6), BenchmarkStore races (Oberyn #1, Kimi #2-#4), JSONL corruption (Kimi #3), webhook cooldown bypass (Oberyn #4, Kimi #5), Anthropic cache race (Oberyn #3), counter accumulation races (Kimi #12)
+**What it fixes:** ALL thread-safety bugs — CapabilityRegistry races (GLM-5 #1, #2, Kimi #1-#6), BenchmarkStore races (GLM-5 #1, Kimi #2-#4), JSONL corruption (Kimi #3), webhook cooldown bypass (GLM-5 #4, Kimi #5), Anthropic cache race (GLM-5 #3), counter accumulation races (Kimi #12)
 
 **Current failure:** Worker threads in `ThreadPoolExecutor` directly mutate shared `CapabilityRegistry`, `BenchmarkStore`, append to `events.jsonl`, and trigger `WebhookNotifier` — all without synchronization. `results_lock` is created but never used.
 
@@ -641,7 +641,7 @@ def acquire_instance_lock(state_dir):
 
 ### Change 3: Semantic Registry Hashing
 
-**What it fixes:** List-ordering false positives (Angry Tyrion), raw payload hash noise (Angry Tyrion, Tyrion synthesis), meaningless METADATA_CHANGED events
+**What it fixes:** List-ordering false positives (GPT-5.2 Pro Research (adversarial)), raw payload hash noise (GPT-5.2 Pro Research (adversarial), GPT-5.2 Pro Research (synthesis)), meaningless METADATA_CHANGED events
 
 **Current failure:** `stable_json_dumps()` sorts dict keys but not list elements. Raw provider payloads are hashed directly. If a provider returns models in different order, the hash changes, generating meaningless `METADATA_CHANGED` events that train operators to ignore alerts.
 
@@ -677,9 +677,9 @@ def compute_model_fingerprint(m: Dict[str, Any]) -> str:
     return sha256_bytes(stable_json_dumps(stable_fields).encode("utf-8"))
 ```
 
-**Hash length policy:** Use full SHA-256 (64 hex chars) for all internal comparisons, lockfile commitments, and manifest hashes. Display/log truncation to 16 hex chars (64 bits) minimum where needed for readability. Never truncate below 16 hex. (Pro Research Finding 5, Oberyn Kill #5)
+**Hash length policy:** Use full SHA-256 (64 hex chars) for all internal comparisons, lockfile commitments, and manifest hashes. Display/log truncation to 16 hex chars (64 bits) minimum where needed for readability. Never truncate below 16 hex. (Pro Research Finding 5, GLM-5 Kill #5)
 
-**Migration: fingerprint algorithm change ("silent storm")** (Tywin Pass 1 Amendment 4):
+**Migration: fingerprint algorithm change ("silent storm")** (GPT-5.2 Thinking Pass 1 Amendment 4):
 
 When upgrading from v1 (raw payload hashing) to v2 (semantic fingerprinting), every model's fingerprint will change on the first v2 run. This generates a mass METADATA_CHANGED event flood that is noise, not signal.
 
@@ -693,11 +693,11 @@ When upgrading from v1 (raw payload hashing) to v2 (semantic fingerprinting), ev
 
 ### Change 4: Tier-Sensitive Drift Detection (Non-Determinism Safe)
 
-**What it fixes:** Alert fatigue from all tiers being CRITICAL (Angry Tyrion, Tyrion synthesis), dead canary hash — prompt not response (Angry Tyrion), false positives from LLM non-determinism (Pro Research Finding 4, Tywin Pass 2), benchmark-missing blind spot (Tyrion), P95 calculation error (Kimi)
+**What it fixes:** Alert fatigue from all tiers being CRITICAL (GPT-5.2 Pro Research (adversarial), GPT-5.2 Pro Research (synthesis)), dead canary hash — prompt not response (GPT-5.2 Pro Research (adversarial)), false positives from LLM non-determinism (Pro Research Finding 4, GPT-5.2 Thinking Pass 2), benchmark-missing blind spot (GPT-5.2 Pro Research), P95 calculation error (Kimi)
 
 **Current failure:** `BEHAVIOR_DRIFT` is a single event type with `CRITICAL` severity regardless of tier. The system uses single-sample binary hash comparison — one hash mismatch triggers drift. LLM APIs are NOT deterministic at temperature=0 due to GPU floating-point non-associativity, MoE batch contention, and infrastructure variance. Binary hash comparison produces false positives on a regular basis, destroying signal quality.
 
-**Required model: Three-state classifier** (Tywin Pass 2):
+**Required model: Three-state classifier** (GPT-5.2 Thinking Pass 2):
 
 For each (provider, model_id, benchmark_prompt):
 
@@ -785,7 +785,7 @@ p95_idx = min(int((len(ok_latencies) - 1) * 0.95), len(ok_latencies) - 1)
 
 ### Change 5: Benchmark-Before-Lock Enforcement (with Canonical Values)
 
-**What it fixes:** Silent omission of behavioral baselines (Tyrion, Angry Tyrion), workflow trap where lock appears safe but contains no behavioral evidence, binary hash lockfiles that inherit non-determinism false positives (Tywin Pass 2)
+**What it fixes:** Silent omission of behavioral baselines (GPT-5.2 Pro Research, GPT-5.2 Pro Research (adversarial)), workflow trap where lock appears safe but contains no behavioral evidence, binary hash lockfiles that inherit non-determinism false positives (GPT-5.2 Thinking Pass 2)
 
 **Current failure:** `create_lock()` copies `benchmark_store.data` if it exists. If you lock before running benchmarks, the lock contains no behavioral baselines. Additionally, lockfiles store binary response hashes which are subject to the same non-determinism false positives as the drift detector.
 
@@ -807,7 +807,7 @@ Option B: Require fresh benchmark data exists
   4. If fresh: proceed with lock creation
 ```
 
-**Lockfile behavioral component** (Tywin Pass 2 Amendment 3):
+**Lockfile behavioral component** (GPT-5.2 Thinking Pass 2 Amendment 3):
 
 Lockfiles MUST store **baseline canonical values** (and optionally the variant distribution) from Change 4, NOT binary response hashes.
 
@@ -841,7 +841,7 @@ During invariant checks, the system MUST apply Change 4's MATCH/VARIANT/DRIFT lo
 
 ## Migration: v1 State Directory -> v2 Epoch-Based State
 
-(Tywin Pass 1 Amendments 3-4 + Tywin Pass 2 Amendment 5, combined)
+(GPT-5.2 Thinking Pass 1 Amendments 3-4 + GPT-5.2 Thinking Pass 2 Amendment 5, combined)
 
 The v2 system MUST support in-place upgrade from an existing v1 `state/` directory without data loss.
 
@@ -877,7 +877,7 @@ The v2 system MUST support in-place upgrade from an existing v1 `state/` directo
 
 ## Error Recovery and State Corruption Handling
 
-(Tywin Pass 2 Amendment 4)
+(GPT-5.2 Thinking Pass 2 Amendment 4)
 
 The observatory MUST be resilient to corrupt or partially written state files.
 
@@ -902,34 +902,34 @@ The observatory MUST be resilient to corrupt or partially written state files.
 
 | Fix | Source | Priority |
 |-----|--------|----------|
-| `read_json()` — catch `JSONDecodeError`, rename corrupt file, return None with warning | Kimi, Tywin Pass 2 | HIGH |
+| `read_json()` — catch `JSONDecodeError`, rename corrupt file, return None with warning | Kimi, GPT-5.2 Thinking Pass 2 | HIGH |
 | `write_text_atomic()` — use `atomic_write_json` pattern (fsync + dir sync + tmp cleanup) | Kimi, Pro Research | HIGH |
 | `append_line()` — error handling for disk full / permission denied | Kimi | HIGH |
 | `requests.Session()` per worker thread — connection pooling, thread safety | Kimi, Pro Research | MEDIUM |
 | PID lockfile — prevent overlapping cron instances (see Change 2) | Kimi | MEDIUM |
 | Signal handlers — SIGINT/SIGTERM graceful shutdown + save | Kimi | MEDIUM |
 | events.jsonl rotation — manual rotation by size or age | Kimi | MEDIUM |
-| `_cooldowns` dict — periodic purge of expired entries | Kimi, Oberyn | LOW |
+| `_cooldowns` dict — periodic purge of expired entries | Kimi, GLM-5 | LOW |
 | `CapabilityRegistry.entries` — optional TTL/purge for removed models | Kimi | LOW |
 
 ### S2: Correctness Fixes
 
 | Fix | Source | Priority |
 |-----|--------|----------|
-| SHA-256 — full hash internally, 16 hex char minimum for display | Oberyn, Pro Research | HIGH |
+| SHA-256 — full hash internally, 16 hex char minimum for display | GLM-5, Pro Research | HIGH |
 | P95 index fix (see Change 4) | Kimi | HIGH |
 | Webhook error persistence — log failed webhook attempts to events.jsonl | Kimi | MEDIUM |
 | Webhook response checking — verify HTTP 2xx, handle 429 with backoff | Kimi | MEDIUM |
 | Benchmark failures — emit BENCHMARK_FAILURE event when ok=False | Kimi | MEDIUM |
 | Exception stack trace preservation — log traceback, not just str(e)[:300] | Kimi | LOW |
-| Pin sampling parameters — include top_p=1, seed=0 where supported | Angry Tyrion | LOW |
+| Pin sampling parameters — include top_p=1, seed=0 where supported | GPT-5.2 Pro Research (adversarial) | LOW |
 
 ### S3: Documentation
 
 | Fix | Source | Priority |
 |-----|--------|----------|
-| README — "Safe Workflow" section explaining benchmark-before-lock | Tyrion | HIGH |
-| README — clarify "behavior drift" means "behavior changed," not "weights changed" | Angry Tyrion | MEDIUM |
+| README — "Safe Workflow" section explaining benchmark-before-lock | GPT-5.2 Pro Research | HIGH |
+| README — clarify "behavior drift" means "behavior changed," not "weights changed" | GPT-5.2 Pro Research (adversarial) | MEDIUM |
 
 ---
 
@@ -945,7 +945,7 @@ The observatory MUST be resilient to corrupt or partially written state files.
 
 5. **Massive lock/threading refactor** — The immutable-results pattern (Change 2) eliminates the need for per-structure locks. Don't add `RLock` to every class; fix the architecture instead.
 
-6. **Binary response hash comparison** — Do NOT implement single-sample hash-mismatch-equals-drift logic under any name. The three-state confirmation model (Change 4) is required. (Tywin Pass 2)
+6. **Binary response hash comparison** — Do NOT implement single-sample hash-mismatch-equals-drift logic under any name. The three-state confirmation model (Change 4) is required. (GPT-5.2 Thinking Pass 2)
 
 ---
 
@@ -2310,7 +2310,7 @@ class ExperimentInvariantManager:
         If benchmark_before_lock is True and watchers are provided, runs fresh
         benchmarks for all models before creating the lock.
 
-        Lockfiles store canonical baselines (not binary hashes) per Change 5/Tywin Pass 2.
+        Lockfiles store canonical baselines (not binary hashes) per Change 5/GPT-5.2 Thinking Pass 2.
         """
         registry_hash, model_ids_hash = self._snapshot_hashes(state_dir)
         epoch_id, manifest_hash = self._get_current_epoch(state_dir)

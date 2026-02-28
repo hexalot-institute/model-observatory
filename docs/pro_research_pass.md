@@ -1,6 +1,6 @@
 # Observatory v2 Spec — Pro Research Technical Findings
 
-**Purpose:** Deep technical validation of all five architectural changes before Tywin stress test.  
+**Purpose:** Deep technical validation of all five architectural changes before GPT-5.2 Thinking stress test.  
 **Date:** 2026-02-27  
 **Method:** Targeted research across concurrency, file I/O, hashing, and LLM non-determinism domains.  
 **Verdict:** Spec is architecturally sound. Six implementation landmines found. Zero require design changes. All addressable during build.
@@ -9,7 +9,7 @@
 
 ## Summary: What This Research Tested
 
-Each of the five architectural changes was probed for implementation-level failure modes that the Council review cycle (focused on architecture) may not have surfaced. The research targeted:
+Each of the five architectural changes was probed for implementation-level failure modes that the review cycle (focused on architecture) may not have surfaced. The research targeted:
 
 1. **Change 1 (Global Poll Epoch):** Atomic file semantics, manifest write ordering, epoch pointer race windows
 2. **Change 2 (Single-Writer Pattern):** `concurrent.futures` return semantics, `ThreadPoolExecutor` thread safety boundaries, PID lockfile reliability
@@ -126,7 +126,7 @@ The spec already handles this correctly with the "only include fields that ARE p
 
 **This is the most important finding.**
 
-The spec replaces prompt-hash canaries (Angry Tyrion's "dead canary" critique) with response-hash canaries. The intent is correct: hash the actual model output to detect behavioral changes. But research confirms a critical reality:
+The spec replaces prompt-hash canaries (GPT-5.2 Pro Research (adversarial)'s "dead canary" critique) with response-hash canaries. The intent is correct: hash the actual model output to detect behavioral changes. But research confirms a critical reality:
 
 **Even at temperature=0, LLM APIs are NOT deterministic.**
 
@@ -177,7 +177,7 @@ class CanaryBaseline:
 
 **Affects:** Change 3 (Semantic Registry Hash), Change 1 (Manifest Hash)
 
-Oberyn Kill #5 flagged hash truncation collision risk. The birthday attack math:
+GLM-5 Kill #5 flagged hash truncation collision risk. The birthday attack math:
 
 - **Full SHA-256 (256 bits):** Collision at ~2^128 operations. Not a concern for any system on Earth.
 - **Truncated to 16 hex chars (64 bits):** Collision at ~2^32 ≈ 4.3 billion operations. For a system hashing a few hundred model fingerprints, the probability of collision is approximately `n²/2^65` where n is the number of distinct fingerprints. At n=1000, that's ~1 in 36 quadrillion. Not a practical concern.
@@ -234,6 +234,6 @@ The epoch/manifest pattern independently converges with Apache Iceberg's metadat
 
 ## Recommendation
 
-Hand this alongside the spec to Tywin. Let him decide whether Finding #4 requires a spec amendment or is an implementation detail. Everything else is "notes for the builder."
+Hand this alongside the spec to GPT-5.2 Thinking. Let it decide whether Finding #4 requires a spec amendment or is an implementation detail. Everything else is "notes for the builder."
 
-No council. No drama. Just implementation.
+No drama. Just implementation.

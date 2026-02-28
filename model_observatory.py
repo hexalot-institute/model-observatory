@@ -1286,7 +1286,7 @@ class ExperimentInvariantManager:
         If benchmark_before_lock is True and watchers are provided, runs fresh
         benchmarks for all models before creating the lock.
 
-        Lockfiles store canonical baselines (not binary hashes) per Change 5/Tywin Pass 2.
+        Lockfiles store canonical baselines (not binary hashes) per Change 5/GPT-5.2 Thinking Pass 2.
         """
         registry_hash, model_ids_hash = self._snapshot_hashes(state_dir)
         epoch_id, manifest_hash = self._get_current_epoch(state_dir)
