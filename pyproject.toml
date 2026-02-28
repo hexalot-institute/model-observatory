@@ -23,6 +23,9 @@ dependencies = [
 [project.optional-dependencies]
 dotenv = ["python-dotenv>=1.0.0"]
 
+[project.scripts]
+observatory-contracts = "observatory_contracts.__main__:main"
+
 [project.urls]
 Repository = "https://github.com/hexalot-institute/model-observatory"
 

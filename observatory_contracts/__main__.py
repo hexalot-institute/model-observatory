@@ -9,12 +9,15 @@ def main(argv=None):
 
     p1 = sub.add_parser("forma", help="FORMA-grade verifier")
     p1.add_argument("--strict", action="store_true", help="Fail on doc↔code mismatches")
+    p1.add_argument("--repo-root", default=".", help="Repo root (default: .)")
 
-    sub.add_parser("observatory", help="Medium verifier")
+    p2 = sub.add_parser("observatory", help="Medium verifier")
+    p2.add_argument("--repo-root", default=".", help="Repo root (default: .)")
 
     args = ap.parse_args(argv)
     if args.cmd == "forma":
-        forma_mod.main(["--strict"] if args.strict else [])
+        forma_args = ["--strict"] if args.strict else []
+        forma_mod.main(forma_args)
     else:
         obs_mod.main([])
 

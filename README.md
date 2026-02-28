@@ -26,6 +26,19 @@ Model Observatory fills that gap.
 
 If you run multi-provider LLM experiments and need to know that your experimental conditions haven't been silently contaminated, this is the tool.
 
+## How This Differs from LangSmith (and Why You Might Use Both)
+
+Model Observatory and LangSmith operate at different layers.
+
+**LangSmith** is primarily *application observability*: tracing and debugging the behavior of LLM-powered apps (agents, chains, tool calls, datasets/evals) on specific runs.
+
+**Model Observatory** is *ecosystem observability*: it monitors the underlying model layer across providers — detecting model availability changes, metadata drift, and behavioral drift — and provides **epoch + manifest + baseline lockfiles** so research runs can be proven not to be silently contaminated by changing APIs.
+
+In practice, they complement each other:
+
+- Use **LangSmith** to understand *why your app behaved the way it did*.
+- Use **Model Observatory** to know whether *the models your app depends on changed* (and when to invalidate/re-run baselines).
+
 ## Quickstart
 
 ```bash
